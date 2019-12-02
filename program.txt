@@ -1,0 +1,61 @@
+Early Stopping is to stop the Training of Neural Networks at the Right Time or Stop training when a monitored quantity has stopped improving.
+
+A major concern with training neural networks is in the choice of the number of training epochs to use.
+
+Too many epochs can lead to overfitting of the training dataset, whereas too few may result in an underfit model. Early stopping is a method that allows you to specify an arbitrary large number of training epochs and stop training once the model performance stops improving on a hold out validation dataset.
+
+EarlyStopping:
+
+keras.callbacks.EarlyStopping(monitor=’val_loss’, min_delta=0, patience=0, verbose=0, mode=’auto’, baseline=None, restore_best_weights=False)
+
+Stop training when a monitored quantity has stopped improving.
+
+Arguments:
+
+monitor: quantity to be monitored.
+min_delta: minimum change in the monitored quantity to qualify as an improvement, i.e. an absolute change of less than min_delta, will count as no improvement.
+patience: number of epochs with no improvement after which training will be stopped.
+verbose: verbosity mode.
+mode: one of {auto, min, max}. In min mode, training will stop when the quantity monitored has stopped decreasing; in max mode it will stop when the quantity monitored has stopped increasing; in auto mode, the direction is automatically inferred from the name of the monitored quantity.
+baseline: Baseline value for the monitored quantity to reach. Training will stop if the model doesn’t show improvement over the baseline.
+restore_best_weights: whether to restore model weights from the epoch with the best value of the monitored quantity. If False, the model weights obtained at the last step of training are used.
+
+The complete example is listed below.
+
+from sklearn.datasets import make_moons
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.callbacks import EarlyStopping
+from matplotlib import pyplot
+
+GENERATE 2D CLASSIFICATION DATASET
+X, y = make_moons(n_samples=100, noise=0.2, random_state=1)
+
+SPLIT INTO TRAIN AND TEST
+n_train = 30
+trainX, testX = X[:n_train, :], X[n_train:, :]
+trainy, testy = y[:n_train], y[n_train:]
+
+DEFINE MODEL
+model = Sequential()
+model.add(Dense(500, input_dim=2, activation=’relu’))
+model.add(Dense(1, activation=’sigmoid’))
+model.compile(loss=’binary_crossentropy’, optimizer=’adam’, metrics=[‘accuracy’])
+
+PATIENT EARLY STOPPING
+es = EarlyStopping(monitor=’val_loss’, mode=’min’, verbose=1, patience=200)
+
+FIT MODEL
+history = model.fit(trainX, trainy, validation_data=(testX, testy), epochs=4000, verbose=0, callbacks=[es])
+
+EVALUATE THE MODEL
+_, train_acc = model.evaluate(trainX, trainy, verbose=0) _, test_acc = model.evaluate(testX, testy, verbose=0)
+print(‘Train: %.3f, Test: %.3f’ % (train_acc, test_acc))
+
+PLOT TRAINING HISTORY
+pyplot.plot(history.history[‘loss’], label=’train’)
+pyplot.plot(history.history[‘val_loss’], label=’test’)
+pyplot.legend()
+pyplot.show()
+
+Example Reference: https://machinelearningmastery.com/
